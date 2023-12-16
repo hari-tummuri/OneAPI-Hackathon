@@ -1,0 +1,11 @@
+python
+intel_extension_for_pytorch as ipex
+modin
+transformers
+torch
+streamlit
+express
+datasets
+accelerate
+bitsandbytes
+chromadb
