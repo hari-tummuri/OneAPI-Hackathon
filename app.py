@@ -12,7 +12,7 @@ import requests
 import os
 import replicate
 from transformers import pipeline,AutoTokenizer, AutoModelForSeq2SeqLM
-
+import intel_extension_for_pytorch as ipex
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQA
 from langchain.document_loaders import TextLoader
@@ -243,8 +243,7 @@ def text_input(selected):
             placeholder = st.empty() 
             # Display a message in white color  
             placeholder.markdown('<h3 style="color:#3F000F;font-family:Verdana">Generating content....</h3>', unsafe_allow_html=True) 
-            # Wait for 5 seconds
-            time.sleep(5)
+           
             # Clear the message  
             placeholder.empty() 
             # st.write("### Summarized Content")
@@ -261,15 +260,21 @@ def text_input(selected):
             placeholder = st.empty()
             # Display a message in white color  
             placeholder.markdown('<h3 style="color:#3F000F;font-family:Verdana">Searching....</h3>', unsafe_allow_html=True)
-            # Wait for 5 seconds
-            time.sleep(5)
+           
 
-            pipe = pipeline("text2text-generation",model= "Bhuvanesh-Ch/finalIPC")
             tokenizer = AutoTokenizer.from_pretrained("Bhuvanesh-Ch/finalIPC")
             model = AutoModelForSeq2SeqLM.from_pretrained("Bhuvanesh-Ch/finalIPC")
-            input_ids = tokenizer(question1, return_tensors="pt").input_ids
+            dtype = torch.float
+            model = ipex.optimize_transformers(model, dtype=dtype)
+            input_ids = tokenizer(messages, return_tensors="pt").input_ids
             gen = model.generate(input_ids, max_new_tokens = 200)
             decode = tokenizer.batch_decode(gen)
+            # pipe = pipeline("text2text-generation",model= "Bhuvanesh-Ch/finalIPC")
+            # tokenizer = AutoTokenizer.from_pretrained("Bhuvanesh-Ch/finalIPC")
+            # model = AutoModelForSeq2SeqLM.from_pretrained("Bhuvanesh-Ch/finalIPC")
+            # input_ids = tokenizer(question1, return_tensors="pt").input_ids
+            # gen = model.generate(input_ids, max_new_tokens = 200)
+            # decode = tokenizer.batch_decode(gen)
 
             html_code3 = """<div style="background-color:#ffffff;padding:50px;border-radius: 10px">  
                         <p style="text-align:center;font-family:Verdana">{}</p></div> """.format(decode[0])
@@ -300,8 +305,7 @@ def text_input(selected):
                     )
             output_list = list(output)
             output_string = "".join(output_list)
-            # Wait for 5 seconds
-            time.sleep(5)
+          
             # Clear the message  
             placeholder.empty()
 
